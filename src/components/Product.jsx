@@ -1,41 +1,71 @@
-import React from "react";
+import React, { useState, useContext } from "react";
 import product1 from "./../images/image-product-1.jpg";
+import product2 from "./../images/image-product-2.jpg";
+import product3 from "./../images/image-product-3.jpg";
+import product4 from "./../images/image-product-4.jpg";
 import thumb1 from "./../images/image-product-1-thumbnail.jpg";
 import thumb2 from "./../images/image-product-2-thumbnail.jpg";
 import thumb3 from "./../images/image-product-3-thumbnail.jpg";
 import thumb4 from "./../images/image-product-4-thumbnail.jpg";
 import cart from "./../images/icon-cart.svg";
+import Modal from "./Modal";
+import CartContext from "./CartContext";
+
 const Product = () => {
+  const [count, setCount] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { addToCart } = useContext(CartContext);
+  const productImage = [product1, product2, product3, product4];
+
+  const handleCountChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value >= 1) {
+      setCount(value);
+    } else {
+      setCount(1);
+    }
+  };
+
+  const addCart = () => {
+    const newItem = {
+      productId: selectedImage,
+      quantity: count,
+    };
+    addToCart(newItem); // from App.js
+    setCount(1);
+  };
+
   return (
     <>
-      <div className="grid-cols-2 grid justify-between">
+      <div className="grid-cols-2 sm:text-lg md:text-xl lg:; grid justify-between relative">
         <div className="mt-[90px] ml-[48px]">
           <img
-            src={product1}
-            alt="sneakers"
+            src={productImage[selectedImage - 1]}
+            alt={`product${selectedImage - 1}`}
             className="w-[445px] h-[445px] rounded-[15px]"
+            // 클릭하면 모달 컴포넌트로
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
           />
+
           <div className="mt-[32px] flex gap-x-[31px]">
-            <img
-              src={thumb1}
-              alt="thumb1"
-              className="w-[88px] h-[88px] rounded-[10px]"
-            />
-            <img
-              src={thumb2}
-              alt="thumb2"
-              className="w-[88px] h-[88px] rounded-[10px]"
-            />
-            <img
-              src={thumb3}
-              alt="thumb3"
-              className="w-[88px] h-[88px] rounded-[10px]"
-            />
-            <img
-              src={thumb4}
-              alt="thumb4"
-              className="w-[88px] h-[88px] rounded-[10px]"
-            />
+            {[thumb1, thumb2, thumb3, thumb4].map((thumb, index) => (
+              <img
+                key={index}
+                src={thumb}
+                alt={`thumb${index + 1}`}
+                className={`w-[88px] h-[88px] rounded-[10px] ${
+                  selectedImage === index + 1
+                    ? "border-2 border-orange-500"
+                    : ""
+                }`}
+                onClick={() => {
+                  setSelectedImage(index + 1);
+                }}
+              />
+            ))}
           </div>
         </div>
         <div className="mt-[152px]">
@@ -64,18 +94,32 @@ const Product = () => {
             $250.00
           </div>
           <div className="flex mt-[30px] gap-x-[16px]">
-            <div className="w-[157px] h-14 bg-slate-50 rounded-[10px]">
-              <div className="flex justify-center items-center">
-                <button className="font-bold text-3xl text-orange-500 mr-[45px]">
+            <div className="w-[157px] h-14 bg-slate-50 rounded-[10px] flex justify-center items-center">
+              <div className="flex items-center justify-between mx-2">
+                <button
+                  onClick={() => setCount(count - 1)}
+                  className="font-bold text-3xl text-orange-500"
+                >
                   -
                 </button>
-                <div>0</div>
-                <button className="font-bold text-3xl text-orange-500 ml-[45px]">
+                <input
+                  className="w-1/3 bg-transparent text-center"
+                  type="text"
+                  value={count}
+                  onChange={handleCountChange}
+                />
+                <button
+                  onClick={() => setCount(count + 1)}
+                  className="font-bold text-3xl text-orange-500"
+                >
                   +
                 </button>
               </div>
             </div>
-            <div className="w-[272px] h-14 bg-orange-500 rounded-[10px] shadow items-center flex justify-center">
+            <button
+              onClick={addCart}
+              className="w-[272px] h-14 bg-orange-500 rounded-[10px] shadow items-center flex justify-center"
+            >
               <div className="flex items-center text-white gap-x-[10px]">
                 <img
                   className="w-[17.46px] h-4"
@@ -85,10 +129,11 @@ const Product = () => {
                 />
                 <div>Add to cart</div>
               </div>
-            </div>
+            </button>
           </div>
         </div>
       </div>
+      {isModalOpen && <Modal onClose={() => setIsModalOpen(false)} />}
     </>
   );
 };
